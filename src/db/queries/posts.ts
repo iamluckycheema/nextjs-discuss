@@ -1,5 +1,6 @@
 import type { Post } from '@prisma/client'
 import { db } from '@/db'
+import { image } from '@nextui-org/react'
 
 export type PostWithData = Post & {
   topic: { slug: string }
@@ -34,5 +35,18 @@ export function fetchTopPosts(): Promise<PostWithData[]> {
       _count: { select: { comments: true } },
     },
     take: 5,
+  })
+}
+
+export function fetchPostsBySearchTerm(term: string): Promise<PostWithData[]> {
+  return db.post.findMany({
+    include: {
+      topic: { select: { slug: true } },
+      user: { select: { name: true, image: true } },
+      _count: { select: { comments: true } },
+    },
+    where: {
+      OR: [{ title: { contains: term }, content: { contains: term } }],
+    },
   })
 }
